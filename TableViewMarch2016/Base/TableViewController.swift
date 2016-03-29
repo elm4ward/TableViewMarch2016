@@ -8,39 +8,40 @@
 
 import UIKit
 
-class TableViewController<Cell: UITableViewCell where Cell: Configurable>: UITableViewController {
 
-  private let cellIdentifier = "Cell"
-  var data = [Any]() {
-    didSet {
-      tableView.reloadData()
-      if tableView.numberOfRowsInSection(0) > 0 {
-        tableView.scrollToRowAtIndexPath(NSIndexPath(forRow: 0,inSection: 0),
-                                         atScrollPosition: .Top,
-                                         animated: true)
-      }
-    }
-  }
+protocol BaseTableViewController {
   
-  init() { super.init(nibName: nil, bundle: nil) }
+  associatedtype CellType: UITableViewCell, Configurable
+  associatedtype ModelType
+
+  var tableView: UITableView! { get }
   
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    tableView.registerClass(Cell.self, forCellReuseIdentifier: cellIdentifier)
+  var data: [ModelType] { get set }
+  
+}
+
+extension BaseTableViewController where Self: UITableViewController {
+  
+  func setupTableView() {
     tableView.rowHeight = UITableViewAutomaticDimension
     tableView.estimatedRowHeight = 60
+    tableView.registerClass(CellType.self, forCellReuseIdentifier: "cell")
   }
-  
-  // MARK: - Table view data source
-  override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return data.count
-  }
-  
-  override func tableView(tableView: UITableView,
-                          cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier,
-                                                           forIndexPath: indexPath) as! Cell
+
+  func configuredCell(forIndexPath indexPath: NSIndexPath) -> CellType {
+    let cell =  tableView.dequeueReusableCellWithIdentifier("cell",
+                                                forIndexPath: indexPath) as! CellType
     cell.config(withItem: data[indexPath.row])
     return cell
   }
+  
+  func reloadTableView() {
+    tableView.reloadData()
+    if tableView.numberOfRowsInSection(0) > 0 {
+      tableView.scrollToRowAtIndexPath(NSIndexPath(forRow: 0,inSection: 0),
+                                       atScrollPosition: .Top,
+                                       animated: true)
+    }
+  }
+  
 }

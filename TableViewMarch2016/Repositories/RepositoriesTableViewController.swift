@@ -8,8 +8,16 @@
 
 import UIKit
 
-class RepositoriesTableViewController<Cell: UITableViewCell where Cell: Configurable>: TableViewController<Cell> {
+class RepositoriesTableViewController: UITableViewController, BaseTableViewController {
 
+  typealias CellType = TwoLabelCell
+
+  var data = [Repository]() {
+    didSet {
+      reloadTableView()
+    }
+  }
+  
   var username: String? {
     didSet {
       guard let username = username where username.characters.count > 0 else { return }
@@ -22,9 +30,23 @@ class RepositoriesTableViewController<Cell: UITableViewCell where Cell: Configur
     }
   }
   
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    setupTableView()
+  }
+  
+  override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    return configuredCell(forIndexPath: indexPath)
+  }
+  
+  override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    return data.count
+  }
+  
   override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
     let nextViewController = DetailViewController()
-    nextViewController.repository = data[indexPath.row] as? Repository
+    nextViewController.repository = data[indexPath.row]
     navigationController?.pushViewController(nextViewController, animated: true)
   }
+
 }
